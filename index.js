@@ -3,7 +3,7 @@ const REMOVE_ICE_CREAM = 'REMOVE_ICE_CREAM';
 
 const Redux = require('redux');
 const createStore = Redux.createStore;
-const applyMiddleware = Redux.applyMiddleware
+const applyMiddleware = Redux.applyMiddleware;
 
 const iceCreamReducer = (iceCream = { qty: 0 }, { type, payLoad }) => {
   switch (type) {
@@ -30,15 +30,19 @@ const loggerEnhancer = (createStore) => (reducer, initialState, enhancer) => {
   return createStore(loggerReducer, initialState, enhancer);
 };
 
+const logMiddleware = (store) => (next) => (action) => {
+  console.log('old state: ', store.getState(), action.type);
+  next(action);
+  console.log('new state: ', store.getState(), action.type);
+};
 
-const logMiddleware = (store)=>(next)=>(action)=>{
-    console.log('old state: ',store.getState(), action.type);
-    next(action);
-    console.log('new state: ',store.getState(),action.type);
-}
+const monitorMiddleware = (store) => (next) => (action) => {
+  const before =  performance.now();
+  next(action);
+  console.log( performance.now() - before);
+};
 
-
-const Store = createStore(iceCreamReducer, applyMiddleware(logMiddleware));
+const Store = createStore(iceCreamReducer, applyMiddleware(logMiddleware, monitorMiddleware));
 
 Store.dispatch({ type: ADD_ICE_CREAM });
 Store.dispatch({ type: ADD_ICE_CREAM });
